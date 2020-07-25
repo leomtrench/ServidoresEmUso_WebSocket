@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+<div class="container-fluid">
+    <div id="divServidores" class="row">
+
+    </div>
+</div>
+
+@section Scripts{
+    <script>
+        var servidores = [];
+        (function () {
+            var webSocketProtocol = location.protocol == "https:" ? "wss:" : "ws:";
+            var webSocketURI = webSocketProtocol + "//" + location.host + "/ws";
+
+            socket = new WebSocket(webSocketURI);
+
+            socket.onopen = function () {
+                console.log("Connected.");
+                socket.send("");
+            };
+
+            socket.onclose = function (event) {
+                if (event.wasClean) {
+                    console.log('Disconnected.');
+                } else {
+                    console.log('Connection lost.'); // for example if server processes is killed
+                }
+                console.log('Code: ' + event.code + '. Reason: ' + event.reason);
+            };
+
+            socket.onmessage = function (event) {
+                if (event.data) {
+                    servidores = JSON.parse(event.data);
+                    renderServidores(servidores)
+                }
+            };
+
+            socket.onerror = function (error) {
+                console.log("Error: " + error.message);
+            };
+
+        })();
+
+        function renderServidores(servidores) {
+            var divServidores = document.getElementById('divServidores');
+            var html = "";
+            for (var i = 0; i < servidores.length; i++) {
+                var servidor = servidores[i];
+                var className = "btn-danger";
+                if (servidor.Conectado) {
+                    className = "btn-success";
+                }
+                html += `<button class="btn col-3 p-4 m-1 ${className}" hash="${servidor.Hash}" onclick="changeStatusServidor(this)">Servidor: ${servidor.Nome}</button>`;
+            }
+            divServidores.innerHTML = html;
+        }
+
+        function changeStatusServidor(button) {
+            socket.send(button.getAttribute("hash"));
+        }
+    </script>
+}
