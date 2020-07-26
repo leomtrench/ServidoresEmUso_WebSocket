@@ -101,14 +101,34 @@ namespace ServidoresEmUso.Business
             return "";
         }
 
-        public void ChangeStatusServidor(string hash)
+        public void ChangeStatusServidor(string json)
         {
-            if (!string.IsNullOrEmpty(hash))
+            ConexaoViewModel conexao = null;
+            try
             {
-                Servidor servidor = Servidores.Where(x => x.Hash == hash).FirstOrDefault();
+                conexao = System.Text.Json.JsonSerializer.Deserialize<ConexaoViewModel>(json);
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            if (conexao != null && !string.IsNullOrEmpty(conexao.Hash) && !string.IsNullOrEmpty(conexao.Nome))
+            {
+                Servidor servidor = Servidores.Where(x => x.Hash == conexao.Hash).FirstOrDefault();
                 if (servidor != null)
                 {
                     servidor.Conectado = !servidor.Conectado;
+                    if (servidor.Conectado)
+                    {
+                        servidor.QuemEstaConectado = conexao.Nome;
+                        servidor.QuandoConectou = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                    }
+                    else
+                    {
+                        servidor.QuemEstaConectado = null;
+                        servidor.QuandoConectou = null;
+                    }
                     WriteFile(System.Text.Json.JsonSerializer.Serialize(Servidores));
                     Servidores = null;
                 }

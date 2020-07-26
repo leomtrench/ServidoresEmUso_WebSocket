@@ -1,12 +1,10 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Servidores Disponíveis / Ocupados";
 }
 
 
-<div class="container-fluid">
-    <div id="divServidores" class="row">
+<div id="divServidores" class="row">
 
-    </div>
 </div>
 
 @section Scripts{
@@ -50,17 +48,26 @@
             var html = "";
             for (var i = 0; i < servidores.length; i++) {
                 var servidor = servidores[i];
-                var className = "btn-danger";
+                var className = "success";
                 if (servidor.Conectado) {
-                    className = "btn-success";
+                    className = "danger";
                 }
-                html += `<button class="btn col-3 p-4 m-1 ${className}" hash="${servidor.Hash}" onclick="changeStatusServidor(this)">Servidor: ${servidor.Nome}</button>`;
+                var quemHtml = "<br/><br/>";
+                if (servidor.QuemEstaConectado) {
+                    quemHtml = `<br/>Quem: ${servidor.QuemEstaConectado}`;
+                    quemHtml += `<br/>Quando: ${servidor.QuandoConectou}`;
+                }
+                html += `<div class="col-lg-2 col-md-3 col-sm-2 p-1"><div class="m-0 alert alert-${className}"><span class="btn btn-${className}">${servidor.Conectado ? "Servidor Ocupado" : "Disponivel"}</span><p>Servidor: ${servidor.Nome} ${quemHtml}<br/><input type="text" class="form-control" placeholder="Se identifique" id="hash${servidor.Hash}"/><button class="btn btn-sm btn-block btn-primary" hash="${servidor.Hash}" onclick="changeStatusServidor(this)">Salvar</button><p></div></div>`;
             }
             divServidores.innerHTML = html;
         }
 
         function changeStatusServidor(button) {
-            socket.send(button.getAttribute("hash"));
+            var obj = {
+                Hash: button.getAttribute("hash"),
+                Nome: document.getElementById("hash"+button.getAttribute("hash")).value,
+            }
+            socket.send(JSON.stringify(obj));
         }
     </script>
 }

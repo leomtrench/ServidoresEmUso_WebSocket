@@ -38,5 +38,7 @@ namespace ServidoresEmUso.Models
             }
         }
         public bool Conectado { get; set; }
+        public string QuemEstaConectado { get; set; }
+        public string QuandoConectou { get; set; }
     }
 }
